@@ -47,8 +47,31 @@ def play_game():
         render(board)
         move = get_valid_move(board)
         board = make_move(board, move, 'X' if moves % 2 == 0 else 'O')
+        if get_winner(board):
+            render(board)
+            break
         os.system('clear')
         moves += 1
+
+def get_winner(board):
+    for row in board:
+        if all(el == row[0] and el is not None for el in row):
+            print('Player', row[0], 'wins!')
+            return True
+
+    for i in range(len(board[0])):
+        if all(board[j][i] == board[0][i] and board[j][i] is not None \
+            for j in range(len(board))):
+            print('Player', board[0][i], 'wins!')
+            return True
+
+    if (all(board[i][i] == board[0][0] and board[i][i] is not None \
+        for i in range(3))) or \
+        board[0][2] == board[1][1] == board[2][0] != None:
+        print('Player', board[1][1], 'wins!')
+        return True
+
+    return False
 
 if __name__ == '__main__':
     play_game()
