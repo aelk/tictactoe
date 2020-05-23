@@ -1,3 +1,5 @@
+import os
+
 def new_board():
     return [[None for i in range(3)] for j in range(3)]
 
@@ -38,13 +40,15 @@ def make_move(board, move, player):
     updated_board[x][y] = player
     return updated_board
 
-if __name__ == '__main__':
+def play_game():
     board = new_board()
-    board[0][1] = 'X'
-    board[2][1] = 'O'
-    board[0][0] = 'O'
+    moves = 0
+    while True:
+        render(board)
+        move = get_valid_move(board)
+        board = make_move(board, move, 'X' if moves % 2 == 0 else 'O')
+        os.system('clear')
+        moves += 1
 
-    move = get_valid_move(board)
-    render(board)
-    b = make_move(board, move, 'O')
-    render(b)
+if __name__ == '__main__':
+    play_game()
