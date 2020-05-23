@@ -47,11 +47,18 @@ def play_game():
         render(board)
         move = get_valid_move(board)
         board = make_move(board, move, 'X' if moves % 2 == 0 else 'O')
-        if get_winner(board):
+        if get_winner(board) or check_for_tie(board):
             render(board)
             break
         os.system('clear')
         moves += 1
+
+def check_for_tie(board):
+    if all(board[i][j] is not None \
+        for i in range(len(board)) for j in range(len(board[0]))):
+        print('It\'s a tie!')
+        return True
+    return False
 
 def get_winner(board):
     for row in board:
