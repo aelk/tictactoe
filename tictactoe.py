@@ -53,22 +53,24 @@ def play_game():
         board = make_move(board, move, player)
         time.sleep(0.2)
         os.system('clear')
-        if get_winner(board, player) or check_for_tie(board):
-            render(board)
+        if get_winner(board, player):
+            print('Player', player, 'wins!')
+            break
+        elif check_for_tie(board):
+            print('It\'s a tie!')
             break
         moves += 1
+    render(board)
 
 def check_for_tie(board):
     if all(board[i][j] is not None \
         for i in range(len(board)) for j in range(len(board[0]))):
-        print('It\'s a tie!')
         return True
     return False
 
 def check_winning_list(lists, player):
     for lst in lists:
         if all(el == player for el in lst):
-            print('Player', player, 'wins!')
             return True
     return False
 
