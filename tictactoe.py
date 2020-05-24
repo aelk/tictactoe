@@ -1,4 +1,6 @@
 import os
+import random
+import time
 
 def new_board():
     return [[None for i in range(3)] for j in range(3)]
@@ -45,12 +47,14 @@ def play_game():
     moves = 0
     while True:
         render(board)
-        move = get_valid_move(board)
-        board = make_move(board, move, 'X' if moves % 2 == 0 else 'O')
-        if get_winner(board) or check_for_tie(board):
+        move = random_ai(board) #get_valid_move(board)
+        player = 'X' if moves % 2 == 0 else 'O'
+        board = make_move(board, move, player)
+        time.sleep(0.2)
+        os.system('clear')
+        if get_winner(board, player) or check_for_tie(board):
             render(board)
             break
-        os.system('clear')
         moves += 1
 
 def check_for_tie(board):
@@ -60,25 +64,36 @@ def check_for_tie(board):
         return True
     return False
 
-def get_winner(board):
-    for row in board:
-        if all(el == row[0] and el is not None for el in row):
-            print('Player', row[0], 'wins!')
+def check_winning_list(lists, player):
+    for lst in lists:
+        if all(el == player for el in lst):
+            print('Player', player, 'wins!')
             return True
-
-    for i in range(len(board[0])):
-        if all(board[j][i] == board[0][i] and board[j][i] is not None \
-            for j in range(len(board))):
-            print('Player', board[0][i], 'wins!')
-            return True
-
-    if (all(board[i][i] == board[0][0] and board[i][i] is not None \
-        for i in range(3))) or \
-        board[0][2] == board[1][1] == board[2][0] != None:
-        print('Player', board[1][1], 'wins!')
-        return True
-
     return False
+
+def get_board_cols(board):
+    return [[row[i] for row in board] for i in range(len(board[0]))]
+
+def get_board_diagonals(board):
+    diagonals = []
+    diagonals.append([r[i] for i, r in enumerate(board)])
+    diagonals.append([r[-i-1] for i, r in enumerate(board)])
+    return diagonals
+
+def get_winner(board, player):
+    lists_to_check = board.copy()
+    lists_to_check.extend(get_board_cols(board))
+    lists_to_check.extend(get_board_diagonals(board))
+    return check_winning_list(lists_to_check, player)
+
+def random_ai(board):
+    valid_moves = [(i, j) for i in range(len(board)) \
+                    for j in range(len(board[0])) if board[i][j] is None]
+    return random.choice(valid_moves)
+
+def winning_move_ai(board, player):
+    # TODO
+    return None
 
 if __name__ == '__main__':
     play_game()
