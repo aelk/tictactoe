@@ -1,4 +1,5 @@
 import os
+import copy
 import random
 import time
 
@@ -37,7 +38,7 @@ def get_valid_move(board):
     return (x, y)
 
 def make_move(board, move, player):
-    updated_board = board.copy()
+    updated_board = copy.deepcopy(board)
     x, y = move
     updated_board[x][y] = player
     return updated_board
@@ -47,8 +48,8 @@ def play_game():
     moves = 0
     while True:
         render(board)
-        move = random_ai(board) #get_valid_move(board)
         player = 'X' if moves % 2 == 0 else 'O'
+        move = find_winning_move_ai(board, player)
         board = make_move(board, move, player)
         time.sleep(0.2)
         os.system('clear')
@@ -80,20 +81,29 @@ def get_board_diagonals(board):
     diagonals.append([r[-i-1] for i, r in enumerate(board)])
     return diagonals
 
-def get_winner(board, player):
+def get_winning_lists(board):
     lists_to_check = board.copy()
     lists_to_check.extend(get_board_cols(board))
     lists_to_check.extend(get_board_diagonals(board))
-    return check_winning_list(lists_to_check, player)
+    return lists_to_check
+
+def get_winner(board, player):
+    return check_winning_list(get_winning_lists(board), player)
+
+def get_valid_moves(board):
+    return [(i, j) for i in range(len(board)) \
+            for j in range(len(board[0])) if board[i][j] is None]
 
 def random_ai(board):
-    valid_moves = [(i, j) for i in range(len(board)) \
-                    for j in range(len(board[0])) if board[i][j] is None]
-    return random.choice(valid_moves)
+    return random.choice(get_valid_moves(board))
 
-def winning_move_ai(board, player):
-    # TODO
-    return None
+def find_winning_move_ai(board, player):
+    valid_moves = get_valid_moves(board)
+    board_copy = copy.deepcopy(board)
+    for move in valid_moves:
+        if get_winner(make_move(board_copy, move, player), player):
+            return move
+    return random_ai(board)
 
 if __name__ == '__main__':
     play_game()
