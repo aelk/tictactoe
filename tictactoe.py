@@ -1,4 +1,5 @@
 import os
+import sys
 import copy
 import random
 import time
@@ -43,24 +44,36 @@ def make_move(board, move, player):
     updated_board[x][y] = player
     return updated_board
 
-def play_game():
+def get_ai(player):
+    player_name_to_ai = {
+        'random_ai': random_ai,
+        'find_winning_move_ai': find_winning_move_ai,
+        'find_winning_and_losing_moves_ai': find_winning_and_losing_moves_ai
+    }
+    if player in player_name_to_ai:
+        return player_name_to_ai[player]
+    else:
+        return random_ai
+
+def play_game(playerX, playerO):
     board = new_board()
     moves = 0
     while True:
         render(board)
         player = 'X' if moves % 2 == 0 else 'O'
-        move = find_winning_and_losing_moves_ai(board, player)
+        move = get_ai(playerX if player == 'X' else playerO)(board, player)
         board = make_move(board, move, player)
-        time.sleep(0.2)
+        #time.sleep(0.2)
         os.system('clear')
         if get_winner(board, player):
             print('Player', player, 'wins!')
-            break
+            render(board)
+            return 1 if player == 'X' else 2
         elif check_for_tie(board):
             print('It\'s a tie!')
-            break
+            render(board)
+            return 0
         moves += 1
-    render(board)
 
 def check_for_tie(board):
     if all(board[i][j] is not None \
@@ -96,7 +109,7 @@ def get_valid_moves(board):
     return [(i, j) for i in range(len(board)) \
             for j in range(len(board[0])) if board[i][j] is None]
 
-def random_ai(board):
+def random_ai(board, player):
     return random.choice(get_valid_moves(board))
 
 def find_winning_move_helper(board, player):
@@ -112,7 +125,7 @@ def find_winning_move_ai(board, player):
     if winning_move is not None:
         return winning_move
     else:
-        return random_ai(board)
+        return random_ai(board, player)
 
 def find_winning_and_losing_moves_ai(board, player):
     winning_move = find_winning_move_helper(board, player)
@@ -124,7 +137,21 @@ def find_winning_and_losing_moves_ai(board, player):
     if blocking_move is not None:
         return blocking_move
 
-    return random_ai(board)
+    return random_ai(board, player)
+
+def repeated_battle(playerX, playerO):
+    rounds = 100
+    ties = 0
+    playerX_wins, playerO_wins = 0, 0
+    for i in range(rounds):
+        result = play_game(playerX, playerO)
+        if result == 0: ties += 1
+        elif result == 1: playerX_wins += 1
+        else: playerO_wins += 1
+    print("ties:", ties)
+    print("playerX wins:", playerX_wins)
+    print("playerO wins:", playerO_wins)
 
 if __name__ == '__main__':
-    play_game()
+    playerX, playerO = sys.argv[1], sys.argv[2]
+    repeated_battle(playerX, playerO)
