@@ -49,7 +49,7 @@ def play_game():
     while True:
         render(board)
         player = 'X' if moves % 2 == 0 else 'O'
-        move = find_winning_move_ai(board, player)
+        move = find_winning_and_losing_moves_ai(board, player)
         board = make_move(board, move, player)
         time.sleep(0.2)
         os.system('clear')
@@ -99,12 +99,31 @@ def get_valid_moves(board):
 def random_ai(board):
     return random.choice(get_valid_moves(board))
 
-def find_winning_move_ai(board, player):
+def find_winning_move_helper(board, player):
     valid_moves = get_valid_moves(board)
     board_copy = copy.deepcopy(board)
     for move in valid_moves:
         if get_winner(make_move(board_copy, move, player), player):
             return move
+    return None
+
+def find_winning_move_ai(board, player):
+    winning_move = find_winning_move_helper(board, player)
+    if winning_move is not None:
+        return winning_move
+    else:
+        return random_ai(board)
+
+def find_winning_and_losing_moves_ai(board, player):
+    winning_move = find_winning_move_helper(board, player)
+    if winning_move is not None:
+        return winning_move
+
+    # find winning move for opposite player; if there is one, block it
+    blocking_move = find_winning_move_helper(board, 'O' if player == 'X' else 'X')
+    if blocking_move is not None:
+        return blocking_move
+
     return random_ai(board)
 
 if __name__ == '__main__':
