@@ -48,7 +48,8 @@ def get_ai(player):
     player_name_to_ai = {
         'random_ai': random_ai,
         'find_winning_move_ai': find_winning_move_ai,
-        'find_winning_and_losing_moves_ai': find_winning_and_losing_moves_ai
+        'find_winning_and_losing_moves_ai': find_winning_and_losing_moves_ai,
+        'minimax_ai': minimax_ai
     }
     if player in player_name_to_ai:
         return player_name_to_ai[player]
@@ -105,6 +106,13 @@ def get_winning_lists(board):
 def get_winner(board, player):
     return check_winning_list(get_winning_lists(board), player)
 
+def get_winning_player(board):
+    lists = get_winning_lists(board)
+    for lst in lists:
+        if all(el is not None for el in lst):
+            return lst[0]
+    return None
+
 def get_valid_moves(board):
     return [(i, j) for i in range(len(board)) \
             for j in range(len(board[0])) if board[i][j] is None]
@@ -139,8 +147,45 @@ def find_winning_and_losing_moves_ai(board, player):
 
     return random_ai(board, player)
 
+def minimax_score(board, player_to_move, player_to_optimize):
+    winner = get_winning_player(board)
+    if winner == player_to_optimize:
+        return 10
+    elif winner == player_to_move:
+        return -10
+    elif check_for_tie(board):
+        return 0
+
+    valid_moves = get_valid_moves(board)
+    scores = []
+    for move in valid_moves:
+        new_board = copy.deepcopy(board)
+        new_board = make_move(new_board, move, player_to_move)
+        opponent = 'O' if player_to_move == 'X' else 'X'
+        score = minimax_score(new_board, opponent, player_to_optimize)
+        scores.append(score)
+
+    if player_to_move == player_to_optimize:
+        return max(scores)
+    else:
+        return min(scores)
+
+def minimax_ai(board, player):
+    board_copy = copy.deepcopy(board)
+    valid_moves = get_valid_moves(board)
+    best_move = None
+    best_score = float('-inf')
+    for move in valid_moves:
+        board_copy = make_move(board_copy, move, player)
+        opponent = 'O' if player == 'X' else 'X'
+        score = minimax_score(board_copy, opponent, player)
+        if best_move is None or score > best_score:
+            best_move = move
+            best_score = score
+    return best_move
+
 def repeated_battle(playerX, playerO):
-    rounds = 100
+    rounds = 30
     ties = 0
     playerX_wins, playerO_wins = 0, 0
     for i in range(rounds):
