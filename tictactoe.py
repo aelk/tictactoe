@@ -151,7 +151,11 @@ def new_make_move(board, move, player):
     x, y = move
     board[x][y] = player
 
-def minimax_score(board, player_to_move, player_to_optimize):
+def minimax_score(board, player_to_move, player_to_optimize, cache={}):
+    board_cache_key = str(board)
+    if board_cache_key in cache:
+        return cache[board_cache_key]
+
     winner = get_winning_player(board)
     if winner is not None:
         if winner == player_to_optimize:
@@ -167,13 +171,15 @@ def minimax_score(board, player_to_move, player_to_optimize):
         _board = copy.deepcopy(board)
         new_make_move(_board, move, player_to_move)
         opponent = 'O' if player_to_move == 'X' else 'X'
-        score = minimax_score(_board, opponent, player_to_optimize)
+        score = minimax_score(_board, opponent, player_to_optimize, cache)
         scores.append(score)
 
     if player_to_move == player_to_optimize:
-        return max(scores) if len(scores) > 0 else 0
+        cache[board_cache_key] = max(scores) if len(scores) > 0 else -10
     else:
-        return min(scores) if len(scores) > 0 else 0
+        cache[board_cache_key] = min(scores) if len(scores) > 0 else 10
+
+    return cache[board_cache_key]
 
 def minimax_ai(board, player):
     valid_moves = get_valid_moves(board)
@@ -190,7 +196,7 @@ def minimax_ai(board, player):
     return best_move
 
 def repeated_battle(playerX, playerO):
-    rounds = 10
+    rounds = 100
     ties = 0
     playerX_wins, playerO_wins = 0, 0
     for i in range(rounds):
